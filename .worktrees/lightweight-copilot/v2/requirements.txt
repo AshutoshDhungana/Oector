@@ -1,0 +1,49 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg[binary]==3.2.3
+pgvector==0.3.6
+
+celery[redis]==5.4.0
+redis==5.2.1
+
+# ML / embeddings — local sentence-transformers (MiniLM-L6-v2, 384-dim).
+numpy==2.1.3
+scikit-learn==1.5.2
+hdbscan==0.8.40
+umap-learn==0.5.7
+sentence-transformers==3.3.1
+
+# LLM client — OpenAI SDK pointed at any OpenAI-compat endpoint (Ollama, vLLM, LM Studio).
+openai==1.59.3
+
+# Kept for now so old Gemini code doesn't ImportError at load time; unused when LLM_PROVIDER=ollama.
+google-genai==0.3.0
+
+# Orchestration
+langgraph==0.2.60
+
+# Document parsing (xlsx, docx, pdf)
+openpyxl==3.1.5
+python-docx==1.1.2
+pypdf==5.1.0
+
+httpx==0.28.1
+feedparser==6.0.11
+python-multipart==0.0.20
+python-jose[cryptography]==3.3.0
+passlib==1.7.4
+bcrypt==4.0.1
+
+structlog==24.4.0
+tenacity==9.0.0
+pandas==2.2.3
+pymysql==1.1.1
+cryptography==43.0.3
+
+pytest==8.3.4
+pytest-asyncio==0.24.0

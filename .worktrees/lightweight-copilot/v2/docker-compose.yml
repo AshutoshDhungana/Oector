@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: kle
+      POSTGRES_PASSWORD: kle
+      POSTGRES_DB: kle
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kle -d kle"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file: .env
+    environment:
+      UPLOAD_ROOT: /tmp/kle_uploads/questionnaires
+      EXPORT_ROOT: /tmp/kle_uploads/exports
+      DEMO_ARTIFACTS_DIR: /tmp/kle_uploads/demo
+      HF_HOME: /models
+      SENTENCE_TRANSFORMERS_HOME: /models
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "${EMBEDDING_CPU_THREADS:-2}"
+      MKL_NUM_THREADS: "${EMBEDDING_CPU_THREADS:-2}"
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./alembic:/code/alembic
+      - ./alembic.ini:/code/alembic.ini
+      - ./scripts:/code/scripts
+      - uploads:/tmp/kle_uploads
+      - model_cache:/models
+
+  worker:
+    build: .
+    command: celery -A app.workers.celery_app worker --loglevel=INFO --concurrency=${CELERY_WORKER_CONCURRENCY:-2}
+    env_file: .env
+    environment:
+      UPLOAD_ROOT: /tmp/kle_uploads/questionnaires
+      EXPORT_ROOT: /tmp/kle_uploads/exports
+      DEMO_ARTIFACTS_DIR: /tmp/kle_uploads/demo
+      HF_HOME: /models
+      SENTENCE_TRANSFORMERS_HOME: /models
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "${EMBEDDING_CPU_THREADS:-2}"
+      MKL_NUM_THREADS: "${EMBEDDING_CPU_THREADS:-2}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./scripts:/code/scripts
+      - uploads:/tmp/kle_uploads
+      - model_cache:/models
+
+  beat:
+    build: .
+    command: celery -A app.workers.celery_app beat --loglevel=INFO
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./scripts:/code/scripts
+
+volumes:
+  pgdata:
+  uploads:
+  model_cache:
