@@ -12,6 +12,7 @@ This repository is a complete local pitch/demo environment. Its default authenti
 | `v2/` | FastAPI API, PostgreSQL/pgvector, Redis, Celery, embeddings, and LLM workflow. |
 | `figma_design_src/` | Source design components used directly by the landing and auth screens. |
 | `v2/pitch-data/` | Attribution and reproducibility notes for the pitch tenant. |
+| `GPT-5.6-README.md` | Optional GPT-5.6 product and integration guidance. |
 | `PITCH_RUNBOOK.md` | Suggested investor walkthrough. |
 
 ## Run Oector anywhere
